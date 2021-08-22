@@ -5,11 +5,13 @@ contract CryptoRoulette {
 
     Roulette public roulette;
     address owner;
-    uint minAmount = 100000000;
+    uint minAmount = 0.001 ether;
     mapping(address => bool) trustedAddresses;
+    mapping(address => bool) hasBetted;
     Bet[] public bets;
     Bet[] winners;
     event Reveal(Bet[] winners, Roulette roulette);
+    event NewBet(Bet[] bets);
 
     constructor() {
         owner = msg.sender;
@@ -25,6 +27,7 @@ contract CryptoRoulette {
     struct Bet {
         address player;
         uint amount;
+        uint number;
         uint wonAmount;
     }
 
@@ -38,11 +41,18 @@ contract CryptoRoulette {
         _;
     }
 
-    function bet(uint number) payable public {
-        require(msg.value > minAmount, "Bet amount should be at least 0.1 ETH");
-        require(number < 30, "Input number must be less than 30");
-        Bet memory newBet = Bet(msg.sender, msg.value, 0);
+    function bet(uint _number) payable public {
+        require(msg.value > minAmount, "Bet amount should be at least 0.001 ETH");
+        require(_number < 30, "Input number must be less than 30");
+        require(!hasBetted[msg.sender], "You can only bet once");
+        Bet memory newBet = Bet(msg.sender, msg.value, _number, 0);
         bets.push(newBet);
+        hasBetted[msg.sender] = true;
+        emit NewBet(bets);
+    }
+
+    function getBets() public view returns (Bet[] memory) {
+        return bets;
     }
 
     function end() public onlyTrusted {
@@ -51,6 +61,7 @@ contract CryptoRoulette {
                 bets[i].wonAmount = bets[i].amount * 2;
                 winners.push(bets[i]);
             }
+            hasBetted[bets[i].player] = false;
         }
         emit Reveal(winners, roulette);
         resetGame();

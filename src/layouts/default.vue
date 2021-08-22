@@ -1,6 +1,7 @@
 <template>
   <v-app>
-    <appbar />
+    <drawer :drawer.sync="drawer" />
+    <appbar :drawer.sync="drawer" />
     <v-main>
       <v-container fluid>
         <Nuxt />
@@ -11,6 +12,11 @@
 
 <script>
 export default {
+  data () {
+    return {
+      drawer: false
+    }
+  },
   mounted () {
   }
 }

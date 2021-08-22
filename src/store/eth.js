@@ -86,6 +86,11 @@ export const actions = {
       }
     })
   },
+  rouletteGetBets() {
+    if (typeof cryptoRoulette !== 'undefined') {
+      return cryptoRoulette.methods.getBets().call()
+    }
+  },
   endRoulette({ state }) {
     if (typeof cryptoRoulette !== 'undefined') {
       return cryptoRoulette.methods.end().send( { from : state.account })
@@ -104,5 +109,9 @@ function registerCryptoRoulette() {
 
   cryptoRoulette.events.Reveal((error, results) => {
     $nuxt.$emit('reveal', results.returnValues);
+  })
+  cryptoRoulette.events.NewBet((error, results) => {
+    console.log('receive new Bet')
+    $nuxt.$emit('new_bet', results.returnValues);
   })
 }
