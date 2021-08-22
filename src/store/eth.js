@@ -3,9 +3,12 @@
 // const tokenAddress = '0x345ca3e014aaf5dca488057592ee47305d9b3e10' // insert deployed EIP20 token address here
 // const eip20 = new web3.eth.Contract(EIP20.abi, tokenAddress)
 import SimpleStorage from '../../build/contracts/SimpleStorage'
+import CryptoRoulette from '../../build/contracts/CryptoRoulette'
 import Web3 from 'web3'
+import roulette from '../pages/roulette'
 
 let simpleStorage;
+let cryptoRoulette;
 
 export const state = () => ({
   connected: false,
@@ -41,6 +44,7 @@ export const actions = {
         commit('setConnected', true)
 
         registerSimpleStorage()
+        registerCryptoRoulette()
 
         window.ethereum.on('accountsChanged', (accounts) => {
           // user disconnected is account
@@ -67,6 +71,25 @@ export const actions = {
     if (typeof simpleStorage !== 'undefined') {
       return simpleStorage.methods.get().call()
     }
+  },
+  rouletteBet({ state }, payload) {
+    return new Promise((resolve, reject) => {
+      if (typeof cryptoRoulette !== 'undefined') {
+        cryptoRoulette.methods.bet(payload.number)
+            .send( { from: state.account, value: web3.utils.toWei(payload.amount, "ether") })
+            .on('receipt', () => {
+              resolve('You made a bet')
+            })
+            .on('error', (error) => {
+              reject(error)
+            })
+      }
+    })
+  },
+  endRoulette({ state }) {
+    if (typeof cryptoRoulette !== 'undefined') {
+      return cryptoRoulette.methods.end().send( { from : state.account })
+    }
   }
 }
 
@@ -74,4 +97,12 @@ export const getters = {}
 
 function registerSimpleStorage() {
   simpleStorage = new web3.eth.Contract(SimpleStorage.abi, process.env.SIMPLE_STORAGE_CONTRACT_ADDRESS)
+}
+
+function registerCryptoRoulette() {
+  cryptoRoulette = new web3.eth.Contract(CryptoRoulette.abi, process.env.CRYPTO_ROULETTE_CONTRACT_ADDRESS)
+
+  cryptoRoulette.events.Reveal((error, results) => {
+    $nuxt.$emit('reveal', results.returnValues);
+  })
 }

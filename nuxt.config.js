@@ -22,12 +22,16 @@ module.exports = {
   target: 'static',
   components: true,
   env: {
-    SIMPLE_STORAGE_CONTRACT_ADDRESS: process.env.SIMPLE_STORAGE_CONTRACT_ADDRESS
+    SIMPLE_STORAGE_CONTRACT_ADDRESS: process.env.SIMPLE_STORAGE_CONTRACT_ADDRESS,
+    CRYPTO_ROULETTE_CONTRACT_ADDRESS: process.env.CRYPTO_ROULETTE_CONTRACT_ADDRESS
   },
   /*
   ** Customize the progress bar color
   */
   loading: { color: '#3B8070' },
+  plugins: [
+      '~/plugins/notiflix'
+  ],
   modules: [
     '@nuxtjs/vuetify'
   ],
